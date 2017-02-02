@@ -200,13 +200,21 @@ type Compound struct {
 }
 
 func (this *Compound) NextState(accum State) (State, error) {
+	backupAccum := State{
+		Items:   map[string]Item{},
+		Revenue: accum.Revenue,
+		Cost:    accum.Cost,
+	}
+	for key, value := range accum.Items {
+		backupAccum.Items[key] = value
+	}
 	nextAccum := accum
 	var err error = nil
 
 	for _, entry := range this.Steps {
 		nextAccum, err = entry.NextState(nextAccum)
 		if err != nil {
-			return accum, err
+			return backupAccum, err
 		}
 	}
 	return nextAccum, err

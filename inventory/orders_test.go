@@ -20,6 +20,18 @@ func TestCreateOrderRenderEntry(t *testing.T) {
 	_TestOrderRenderEntry(t, NewCreate("Test", 1, 1), "create Test 0.01 0.01")
 }
 
+func TestReportOrderRenderEntry(t *testing.T) {
+	_TestOrderRenderEntry(t, NewReport(nil), "report")
+}
+
+func TestCompoundOrderRenderEntry(t *testing.T) {
+	_TestOrderRenderEntry(t, NewCompound(), "compound")
+	_TestOrderRenderEntry(t, NewCompound(
+		NewBuyOrder("A", 1),
+		NewBuyOrder("B", 1),
+	), "compound\nupdateBuy A 1\nupdateBuy B 1")
+}
+
 func _TestOrderRenderEntry(t *testing.T, order StateEntry, expected string) {
 	if order.RenderEntry() != expected {
 		t.Errorf("The Message Renders Wrong:%v %v", order, order.RenderEntry())
@@ -162,6 +174,49 @@ func TestReportNextState(t *testing.T) {
 	}
 }
 
+func TestCompoundNextState(t *testing.T) {
+	//Test an empty compound statement
+	_TestOrderNextState(t,
+		NewCompound(),
+		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}}},
+		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}}},
+		nil,
+	)
+	//Test Single Compound Statement
+	_TestOrderNextState(t,
+		NewCompound(
+			NewBuyOrder("A", 2),
+		),
+		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}}},
+		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 3}}, Cost: 2},
+		nil,
+	)
+	//Test multiple compound statement
+	_TestOrderNextState(t,
+		NewCompound(
+			NewBuyOrder("A", 2),
+			NewBuyOrder("A", 2),
+		),
+		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}}},
+		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 5}}, Cost: 4},
+		nil,
+	)
+	//Test error ejection
+	_TestOrderNextState(t,
+		NewCompound(
+			NewBuyOrder("A", 2),
+			NewBuyOrder("A", -2),
+		),
+		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}}},
+		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}}},
+		//State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 5}}, Cost: 4},
+		errors.New("Negative Buy Attempted: updateBuy A -2"),
+	)
+}
+
+/**
+* This test demonstrates that once the report entry send the object on the bus, other changes can be processed while the report is being handled
+ */
 func TestReportThreadSafety(t *testing.T) {
 	reportBus := make(chan State)
 	//Must launch the task asyncrounously for the channel to work
