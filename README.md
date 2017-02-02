@@ -74,7 +74,7 @@ Profit since previous report                                   	-724.75
 
 You can build the binary with this command (OSX specific):
 
-	$ docker-compose run -e GOOS=darwin --rm builder go build -o mrx-inventory
+	$ docker run --rm -v "$PWD":/go/src/ -w /go/src -e GOOS=darwin golang:1.7 go build -o mrx-inventory
 
 The magic test invocation
 
