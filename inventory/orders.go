@@ -168,6 +168,62 @@ func NewDelete(itemName string) StateEntry {
 	return &Delete{ItemName: itemName}
 }
 
+/**
+* REPORT FAMILY
+**/
+type Report struct {
+	ReportBus chan State
+}
+
+func (this *Report) NextState(accum State) (State, error) {
+	output := State{Items: map[string]Item{}}
+	for key, value := range accum.Items {
+		output.Items[key] = value
+	}
+	this.ReportBus <- accum
+	return output, nil
+}
+
+func (this *Report) RenderEntry() string {
+	return fmt.Sprintf("report")
+}
+
+func NewReport(reportBus chan State) StateEntry {
+	return &Report{ReportBus: reportBus}
+}
+
+/**
+* COMPOUND FAMILY
+**/
+type Compound struct {
+	Steps []StateEntry
+}
+
+func (this *Compound) NextState(accum State) (State, error) {
+	nextAccum := accum
+	var err error = nil
+
+	for _, entry := range this.Steps {
+		nextAccum, err = entry.NextState(nextAccum)
+		if err != nil {
+			return accum, err
+		}
+	}
+	return nextAccum, err
+}
+
+func (this *Compound) RenderEntry() string {
+	output := "compound"
+	for _, entry := range this.Steps {
+		output += "\n" + entry.RenderEntry()
+	}
+	return output
+}
+
+func NewCompound(steps ...StateEntry) StateEntry {
+	return &Compound{Steps: steps}
+}
+
 //func ProcessJournal(accum map[string]Item, entries []StateEntry) {
 //revenue, cost := 0, 0
 //for _, entry := range entries {
