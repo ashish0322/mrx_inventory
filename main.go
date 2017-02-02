@@ -1,5 +1,11 @@
 package main
 
+/**
+The original outline of this was taken from here:
+
+https://coderwall.com/p/wohavg/creating-a-simple-tcp-server-in-go
+*/
+
 import (
 	"fmt"
 	"inventory"
