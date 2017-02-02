@@ -56,6 +56,7 @@ func (this *BuyOrder) NextState(accum map[string]Item) (map[string]Item, int, er
 	}
 	i := accum[this.ItemName]
 	i.Qty += this.Quantity
+	accum[this.ItemName] = i
 	return accum, this.Quantity * i.BuyPrice, nil
 }
 
@@ -80,7 +81,7 @@ type Create struct {
 
 func (this *Create) NextState(accum map[string]Item) (map[string]Item, int, error) {
 	if _, ok := accum[this.ItemName]; ok {
-		return accum, 0, errors.New("Cannot create previously existing item" + this.RenderEntry())
+		return accum, 0, errors.New("Cannot create previously existing item " + this.RenderEntry())
 	}
 	accum[this.ItemName] = NewItem(this.BuyPrice, this.SellPrice)
 	return accum, 0, nil
