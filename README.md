@@ -78,4 +78,10 @@ You can build the binary with this command (OSX specific):
 
 The magic test invocation
 
-    $ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp -e "GOPATH=/usr/src/myapp" golang:1.7 go test
+    $ docker run --rm -v "$PWD":/go/src/ -w /go/src golang:1.7 go test inventory -coverprofile coverage.out
+
+The magic coverage invocation
+
+    $ docker run --rm -v "$PWD":/go/src/ -w /go/src golang:1.7 go tool cover --html=coverage.out -o coverage.html 
+
+
