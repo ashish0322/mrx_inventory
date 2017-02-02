@@ -62,14 +62,99 @@ func TestCreateNextState(t *testing.T) {
 	)
 }
 
+func TestDeleteNextState(t *testing.T) {
+	//This tests the case where a new item is being inserted to an empty state
+	_TestOrderNextState(t,
+		NewDelete("A"),
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
+		map[string]Item{},
+		0,
+		nil,
+	)
+	//This tests the case where an item is being inserted to an empty state.  Notice that the buy & sell price are NOT updated
+	_TestOrderNextState(t,
+		NewDelete("A"),
+		map[string]Item{},
+		map[string]Item{},
+		0,
+		errors.New("Cannot delete non-existent item delete A"),
+	)
+}
+
 func TestBuyNextState(t *testing.T) {
 	//This tests the case where a new item is being inserted to an empty state
 	_TestOrderNextState(t,
 		NewBuyOrder("A", 1),
 		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
 		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}},
+		-1,
+		nil,
+	)
+	_TestOrderNextState(t,
+		NewBuyOrder("A", -1),
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
+		0,
+		errors.New("Negative Buy Attempted: updateBuy A -1"),
+	)
+	//This case shows that buying a non-existent items generates an error
+	_TestOrderNextState(t,
+		NewBuyOrder("B", 1),
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
+		0,
+		errors.New("Buying Non-Existent Item Attempted: updateBuy B 1"),
+	)
+	//This case shows that the negative buy error trumps the non-existent buy error
+	_TestOrderNextState(t,
+		NewBuyOrder("B", -1),
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
+		0,
+		errors.New("Negative Buy Attempted: updateBuy B -1"),
+	)
+}
+
+func TestSellNextState(t *testing.T) {
+	//This tests the case where a new item is being inserted to an empty state
+	_TestOrderNextState(t,
+		NewSellOrder("A", 1),
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}},
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
 		1,
 		nil,
+	)
+	//This case shows that selling a negative number of items generates an error
+	_TestOrderNextState(t,
+		NewSellOrder("A", -1),
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
+		0,
+		errors.New("Negative Sell Attempted: updateSell A -1"),
+	)
+	//This case shows that selling non-existent items raises an error
+	_TestOrderNextState(t,
+		NewSellOrder("B", 1),
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
+		0,
+		errors.New("Selling Non-Existent Item Attempted: updateSell B 1"),
+	)
+	//This case shows that the negative buy error trumps the non-existent buy error
+	_TestOrderNextState(t,
+		NewSellOrder("B", -1),
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
+		0,
+		errors.New("Negative Sell Attempted: updateSell B -1"),
+	)
+	//This case shows that selling too many of an item generates an error
+	_TestOrderNextState(t,
+		NewSellOrder("A", 1),
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
+		map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}},
+		0,
+		errors.New("Selling too Many Units Attempted: updateSell A 1"),
 	)
 }
 
@@ -79,7 +164,7 @@ This is a worker function that does a lot of the heavy lifting for the testing. 
 func _TestOrderNextState(t *testing.T, order StateEntry, input, expectedAccum map[string]Item, expectedDelta int, expectedError error) {
 	actualAccum, actualDelta, actualError := order.NextState(input)
 	if actualDelta != expectedDelta {
-		t.Errorf("Expected Delta:%d,\tActual Delta%d")
+		t.Errorf("Expected Delta:%d,\tActual Delta%d", expectedDelta, actualDelta)
 	}
 	for actualKey, actualValue := range actualAccum {
 		expectedValue, ok := expectedAccum[actualKey]
