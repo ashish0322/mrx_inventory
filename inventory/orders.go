@@ -21,12 +21,19 @@ func NewItem(BuyPrice, SellPrice int) Item {
 /**
 A utitlity function for pretty-printing the currency
 */
-func RenderCurrency(Currency int) string {
-	return fmt.Sprintf("%d.%02d", Currency/100, Currency%100)
+func RenderCurrency(currency int) string {
+	isNegative := currency < 0
+	if isNegative {
+		currency = -currency
+	}
+	output := fmt.Sprintf("%d.%02d", currency/100, currency%100)
+	if isNegative {
+		output = "-" + output
+	}
+	return output
 }
 
 type StateEntry interface {
-	//NextState(accum map[string]Item) (map[string]Item, int, error)
 	NextState(accum State) (State, error)
 	RenderEntry() string
 }
@@ -132,6 +139,12 @@ type Create struct {
 func (this *Create) NextState(accum State) (State, error) {
 	if _, ok := accum.Items[this.ItemName]; ok {
 		return accum, errors.New("Cannot create previously existing item " + this.RenderEntry())
+	}
+	if this.BuyPrice < 0 {
+		return accum, errors.New("Cannot set negative buy price " + this.RenderEntry())
+	}
+	if this.SellPrice < 0 {
+		return accum, errors.New("Cannot set negative sell price " + this.RenderEntry())
 	}
 	accum.Items[this.ItemName] = NewItem(this.BuyPrice, this.SellPrice)
 	return accum, nil
