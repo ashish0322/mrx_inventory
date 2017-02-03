@@ -118,3 +118,48 @@ MiniPizza                      0       0.03       1.01            0.00
                               Cost Since Last Report              0.00
                               Profit Since Last Report            0.00
 ```
+
+# Design
+The problem statement opens with a vision for having a system controlled via SMS.  In order to hit this goal, there are a few issues that need to be hammered out right away.  A working data model needs to be created, so that is possible to decide how commands should interact.  Second, the command parser needs to be developed, so that it is possible to interact with the system.  Third, the goal of using SMS presents several concurrrency issues, with the possbility of commands being lsot or arriving out of order.  The data model needs to handle these concerns directly.
+
+## Data Model
+The problem states four types of commands that can change the state of the inventory, and one command that changes the state of accumalated cash.  In order to test the affects these commands have on the system, the state was modeled explicitly.  The most important interface was the StateEntry interface, which you can see the key pieces below:
+
+	type StateEntry interface {
+		NextState(accum State) (State, error)
+		//Human Readbility Methods Ommited
+	}
+
+The interface would be consumed in the following manner:
+
+	state, err = entry.NextState(state)
+
+Since the state is passed in and returned explicity, it allows the modifications the specifc entry makes to be tested dow to the smallest detail.  This turned out to be very useful, as I had made a mistake in my original interpretation of the spec.  You can see git commit `7d68125ddd86d3` in particular to watch as I fix this specific mistake.
+
+Also, by having errors being explicitly returned, it is easier to test situations that are strictly valid.  For example, what happens when an entry is created twice?  What happens when the updateBuy or updateSell order is for a negative quantity?  What happens when you try to sell more inventory that you currently have?  Each of these can easily be unit tested by the virtue of making state explicit.
+
+## Parsing
+Parsing the data is easy to state, difficult to get right.  The majority of the parsing is done in a function called ParseLine, it has the following signature
+
+    ParseLine(line string,/*otherDeps*/) (StateEntry,error)
+
+You would invoke the parser like so
+
+    entry, err = ParseLine(line,/*otherDeps)
+
+When it is possible to parse the line, a concrete type the implements the StateEntry interface is returned.  However, which implementation of the interface that is returned is hidden from the user. You'll notice that there also is an error type returned as well.  If the function was not able to succesfully parse the line, an error value will be returned. 
+
+The parser is deliberately very strict. There was a choice between making the parse stricter but more predictable, or friendlier, but perhaps less predictable.  The decision was made to error on the side of predictability, because a predictable system is required for (eventually) devivering a friendlier system.
+
+## Concurrency
+Finally, the system will eventually be required to accept input from SMS.  This means there are several concurrency issues that need to be evaluated.  The system will need to be able to accept input from multiple sources concurrently, and the messages will arrive potentially out of order.
+
+It was the concurrently arriving messages issues that drove me to deliver this prototype using go (well, and it was fun).  Go provides several features to make this easy, specifically first class internal processes, and channel support for communicating between these processes.
+
+The application has one internal process the is in charge of managing state.  It recieves inputs on an internal channel, which it then uses to update the internal application state.  Interacting with this internal process is simple, and all of the complexity is hidden from clients of this process by the channel.  All the consuming process needs to do is send a message on the channel, and a response will be returned to original process once the state management process is complete.
+
+If you look in the application entry point, `main.go`, you'll see that the message quickly gets from the TCP perimetter to the appropriate channel.
+
+Other major problem, messages arriving out of order, is a little trickier.  The application doesn't call of any transaction or batching features that would normally be used to mitigate risks like this.  The only mitigate at this point is to thourougly test the data model.  For example, you'll see code to protect `updateBuy` or `updateSell` commands from being executed if the items doesn't exist yet.  There are many other safegaurds like this one.
+
+One last concurrency concern that was address was with the `report` command.  The was a design concern about the report command taking a long time, and providing an opportunity for a race condition while commands are still being processed(I/O can be slow).  In order to preserve the system throughput, a copy of the approriate state object is sent to a seperate async goroutine, in order to keep everything thread safe.  If this becomes a performance bottleneck, an immutble version of the state object could be investigated.
