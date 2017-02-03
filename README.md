@@ -127,7 +127,7 @@ The problem states four types of commands that can change the state of the inven
 
 	type StateEntry interface {
 		NextState(accum State) (State, error)
-		//Human Readbility Methods Ommited
+		//Human Readability Methods Omitted
 	}
 
 The interface would be consumed in the following manner:
