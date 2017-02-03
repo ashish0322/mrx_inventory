@@ -30,7 +30,12 @@ func main() {
 	defer l.Close()
 	fmt.Println("Listening on " + CONN_HOST + ":" + CONN_PORT)
 	packetBus := make(chan inventory.RequestPacket)
-	go inventory.ProcessInputs(packetBus)
+	go inventory.ProcessInputs(packetBus,
+		func(s inventory.State) {
+			print("\033[H\033[2J")
+			fmt.Println(inventory.RenderState(s))
+		},
+	)
 	for {
 		// Listen for an incoming connection.
 		conn, err := l.Accept()

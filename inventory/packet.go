@@ -1,9 +1,5 @@
 package inventory
 
-import (
-	"fmt"
-)
-
 func NewRequest(body string) RequestPacket {
 	return RequestPacket{Body: body, Response: make(chan string)}
 }
@@ -13,7 +9,7 @@ type RequestPacket struct {
 	Response chan string
 }
 
-func ProcessInputs(packetBus chan RequestPacket) {
+func ProcessInputs(packetBus chan RequestPacket, reportHandler func(State)) {
 	state := State{Items: map[string]Item{}}
 	reportBus := make(chan State, 10)
 	for {
@@ -31,8 +27,7 @@ func ProcessInputs(packetBus chan RequestPacket) {
 			}
 			packet.Response <- "OK"
 		case s := <-reportBus:
-			print("\033[H\033[2J")
-			fmt.Println(RenderState(s))
+			reportHandler(s)
 		}
 
 	}
