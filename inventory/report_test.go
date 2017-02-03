@@ -6,9 +6,9 @@ import (
 
 func TestReportNextState(t *testing.T) {
 	//This tests the case where a new item is being inserted to an empty state
-	reportBus := make(chan State)
+	reportBus := make(chan State, 1)
 	//Must launch the task asyncrounously for the channel to work
-	go _TestOrderNextState(t,
+	_TestOrderNextState(t,
 		NewReport(reportBus),
 		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}}, Revenue: 1, Cost: 1},
 		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}}},
@@ -27,9 +27,9 @@ func TestReportNextState(t *testing.T) {
 * This test demonstrates that once the report entry send the object on the bus, other changes can be processed while the report is being handled
  */
 func TestReportThreadSafety(t *testing.T) {
-	reportBus := make(chan State)
+	reportBus := make(chan State, 1)
 	//Must launch the task asyncrounously for the channel to work
-	go _TestOrderNextState(t,
+	_TestOrderNextState(t,
 		NewCompound(
 			NewReport(reportBus),
 			NewBuyOrder("A", 2),
