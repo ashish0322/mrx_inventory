@@ -46,7 +46,7 @@ func _TestOrderNextState(t *testing.T, order StateEntry, input, expectedAccum St
 		t.Errorf("Expected Cost:%d,\tActual Cost%d", expectedAccum.Cost, actualAccum.Cost)
 	}
 	if actualAccum.Revenue != expectedAccum.Revenue {
-		t.Errorf("Expected Revenue:%d,\tActual Revenue%d", expectedAccum.Revenue, actualAccum.Revenue)
+		t.Errorf("Expected Revenue:%d,\tActual Revenue:%d", expectedAccum.Revenue, actualAccum.Revenue)
 	}
 	for actualKey, actualValue := range actualAccum.Items {
 		expectedValue, ok := expectedAccum.Items[actualKey]

@@ -26,7 +26,7 @@ func (this *SellOrder) NextState(accum State) (State, error) {
 	}
 	i.Qty -= this.Quantity
 	accum.Items[this.ItemName] = i
-	accum.Revenue += this.Quantity * (i.BuyPrice - i.SellPrice)
+	accum.Revenue += this.Quantity * (i.SellPrice - i.BuyPrice)
 	return accum, nil
 }
 
