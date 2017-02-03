@@ -3,19 +3,19 @@
 Mr. X owns a store that sells almost everything you think about. Now he wants a inventory management system to manage his inventory. Mr. X feels that controlling his inventory through SMS from his mobile will be revolutionary. So as a prequel, he decides that he wants a system that accepts one line commands and performs the respective operation.
 
 Below is the list of commands he needs in the system:
-* create itemName costPrice sellingPrice
+* `create itemName costPrice sellingPrice`
        	Whenever Mr. X wants to add a new item to his store he issues a create command. This command creates a new item in the inventory with the given cost price and selling price. The prices are rounded off to two decimal places.
 
-* delete itemName
+* `delete itemName`
       	If Mr. X decides not to sell an item anymore, then he simply issues a delete command. This command will remove the item from the inventory.
 
-* updateBuy itemName quantity
+* `updateBuy itemName quantity`
       	Whenever Mr. X purchases additional quantity of the mentioned item, then he issues a updateBuy command. This command should increase the quantity of the mentioned item.
 
-* updateSell itemName quantity
+* `updateSell itemName quantity`
       	Whenever Mr. X sells some item, then he issues a updateSell command. This command should deduct the quantity of the mentioned item.
 
-* report
+* `report`
       	Whenever Mr. X wants to view his inventory list he issues the report command. This command should print the current inventory details in the specified format sorted by alphabetical order. Apart from printing the inventory it has to report on the profit made by Mr. X since last report generation. Where profit is calculated by:  `sum(sellingPrice - costPrice)` of the sold items multiplied by `(no. of items sold - costPrice)` of the deleted items.
 
 
