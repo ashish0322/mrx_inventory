@@ -70,24 +70,27 @@ type RequestPacket struct {
 func processInputs(packetBus chan RequestPacket) {
 	state := inventory.State{Items: map[string]inventory.Item{}}
 	reportState := inventory.State{Items: map[string]inventory.Item{}}
-	ticker := time.Tick(5000 * time.Millisecond)
+	ticker := time.Tick(1000 * time.Millisecond)
 	reportBus := make(chan inventory.State, 10)
 	for {
 		select {
 		case packet := <-packetBus:
 			entry, err := inventory.ParseLine(packet.Body, reportBus)
 			if err != nil {
-				packet.Response <- err.Error()
+				packet.Response <- err.Error() + "\n"
 				continue
 			}
 			state, err = entry.NextState(state)
 			if err != nil {
-				packet.Response <- err.Error()
+				packet.Response <- err.Error() + "\n"
 				continue
 			}
-			packet.Response <- "OK"
+			packet.Response <- "OK\n"
 		case _ = <-ticker:
-			fmt.Println(reportState)
+			//This will automatically clear the screen, unix only
+			//Yes, it's an ugly hack
+			print("\033[H\033[2J")
+			fmt.Println(inventory.RenderState(reportState))
 		case s := <-reportBus:
 			//fmt.Println("report")
 			reportState = s
