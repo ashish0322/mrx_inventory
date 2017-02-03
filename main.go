@@ -29,13 +29,16 @@ func main() {
 	// Close the listener when the application closes.
 	defer l.Close()
 	fmt.Println("Listening on " + CONN_HOST + ":" + CONN_PORT)
+
+	//Create the dependencies needed for the process handler
 	packetBus := make(chan inventory.RequestPacket)
-	go inventory.ProcessInputs(packetBus,
-		func(s inventory.State) {
-			print("\033[H\033[2J")
-			fmt.Println(inventory.RenderState(s))
-		},
-	)
+	handler := func(s inventory.State) {
+		print("\033[H\033[2J")
+		fmt.Println(inventory.RenderState(s))
+	}
+
+	//Launch the process handler in a new goroutine
+	go inventory.ProcessInputs(packetBus, handler)
 	for {
 		// Listen for an incoming connection.
 		conn, err := l.Accept()
