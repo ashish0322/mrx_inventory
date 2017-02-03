@@ -39,3 +39,18 @@ func RenderItem(name string, item Item) string {
 	output := fmt.Sprintf(LINE_FORMAT_STRING, name, item.Qty, RenderCurrency(item.BuyPrice), RenderCurrency(item.SellPrice), RenderCurrency(item.Qty*item.BuyPrice))
 	return output
 }
+
+/**
+A utitlity function for pretty-printing the currency
+*/
+func RenderCurrency(currency int) string {
+	isNegative := currency < 0
+	if isNegative {
+		currency = -currency
+	}
+	output := fmt.Sprintf("%d.%02d", currency/100, currency%100)
+	if isNegative {
+		output = "-" + output
+	}
+	return output
+}
