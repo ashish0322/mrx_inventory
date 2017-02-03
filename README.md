@@ -71,7 +71,7 @@ Profit since previous report                                   	-724.75
 ```
 
 # Development
-The only requirement for building this application is docker, preferablely on some flavor of 'nix.
+The only requirement for building this application is docker, preferably on some flavor of 'nix.
 
 ## Building the tool
 
@@ -95,11 +95,11 @@ This is the command to convert the coverage statistic into a friendly HTML repor
 You can now open `coverage.html` in your browser
 
 # Usage
-The mrx-inventoy program is a daemon, that will listen for commands on TCP port 8333 by default.  You can start it like this
+The mrx-inventory program is a daemon, that will listen for commands on TCP port 8333 by default.  You can start it like this
 
 	$ ./mrx-inventory
 
-This will constantly display the last report.  In order to interact with the daemon, a tool like netcat will be very useful  For example, you could interact wit the daemon like this:
+This will constantly display the last report.  In order to interact with the daemon, a tool like netcat will be very useful  For example, you could interact with the daemon like this:
 
 	$ echo -n "create BaconNinjaThing 15.00 204.38" | nc localhost 8333
 	$ echo -n "create MiniPizza 0.03 1.01" | nc localhost 8333
