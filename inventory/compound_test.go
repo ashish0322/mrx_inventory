@@ -19,7 +19,7 @@ func TestCompoundNextState(t *testing.T) {
 			NewBuyOrder("A", 2),
 		),
 		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}}},
-		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 3}}, Cost: 2},
+		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 3}}},
 		nil,
 	)
 	//Test multiple compound statement
@@ -29,7 +29,7 @@ func TestCompoundNextState(t *testing.T) {
 			NewBuyOrder("A", 2),
 		),
 		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}}},
-		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 5}}, Cost: 4},
+		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 5}}},
 		nil,
 	)
 	//Test error ejection
@@ -40,7 +40,6 @@ func TestCompoundNextState(t *testing.T) {
 		),
 		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}}},
 		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}}},
-		//State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 5}}, Cost: 4},
 		errors.New("Negative Buy Attempted: updateBuy A -2"),
 	)
 }

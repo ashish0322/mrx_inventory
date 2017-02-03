@@ -10,7 +10,7 @@ func TestBuyNextState(t *testing.T) {
 	_TestOrderNextState(t,
 		NewBuyOrder("A", 1),
 		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1}}},
-		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}}, Cost: 1},
+		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}}},
 		nil,
 	)
 	//This case show that buying a negative qty generates an error

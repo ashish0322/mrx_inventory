@@ -35,7 +35,7 @@ func TestReportThreadSafety(t *testing.T) {
 			NewBuyOrder("A", 2),
 		),
 		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 1}}, Revenue: 1, Cost: 1},
-		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 3}}, Cost: 2},
+		State{Items: map[string]Item{"A": Item{BuyPrice: 1, SellPrice: 1, Qty: 3}}},
 		nil,
 	)
 	localState := <-reportBus

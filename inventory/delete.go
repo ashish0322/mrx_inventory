@@ -19,6 +19,8 @@ func (this *Delete) NextState(accum State) (State, error) {
 	if _, ok := accum.Items[this.ItemName]; !ok {
 		return accum, errors.New("Cannot delete non-existent item " + this.RenderEntry())
 	}
+	i := accum.Items[this.ItemName]
+	accum.Cost += i.Qty * i.BuyPrice
 	delete(accum.Items, this.ItemName)
 	return accum, nil
 }
