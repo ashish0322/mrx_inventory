@@ -70,18 +70,51 @@ Total value                                                   	11253.87
 Profit since previous report                                   	-724.75
 ```
 
-# Building the tool 
+# Development
+The only requirement for building this application is docker, preferablely on some flavor of 'nix.
 
-You can build the binary with this command (OSX specific):
+## Building the tool
+
+You can build the binary with this command on OSX:
 
 	$ docker run --rm -v "$PWD":/go/src/ -w /go/src -e GOOS=darwin golang:1.7 go build -o mrx-inventory
 
-The magic test invocation
+If you are building the tool on standard linux, use this command instead:
+
+	$ docker run --rm -v "$PWD":/go/src/ -w /go/src golang:1.7 go build -o mrx-inventory
+
+## Running the tests
+This is the command to run all of the unit tests, and get the coverage statistics
 
 	$ docker run --rm -v "$PWD":/go/src/ -w /go/src golang:1.7 go test inventory -coverprofile coverage.out
 
-The magic coverage invocation
+This is the command to convert the coverage statistic into a friendly HTML report
 
 	$ docker run --rm -v "$PWD":/go/src/ -w /go/src golang:1.7 go tool cover --html=coverage.out -o coverage.html 
 
+You can now open `coverage.html` in your browser
 
+# Usage
+The mrx-inventoy program is a daemon, that will listen for commands on TCP port 8333 by default.  You can start it like this
+
+	$ ./mrx-inventory
+
+This will constantly display the last report.  In order to interact with the daemon, a tool like netcat will be very useful  For example, you could interact wit the daemon like this:
+
+	$ echo -n "create BaconNinjaThing 15.00 204.38" | nc localhost 8333
+	$ echo -n "create MiniPizza 0.03 1.01" | nc localhost 8333
+	$ echo -n "report" | nc localhost 8333
+
+The daemon will then present a report like this:
+
+```
+Name                    Quantity  Bought At    Sold At    Bought Value
+-----                      -----      -----      -----           -----
+BaconNinjaThing                0      15.00     204.38            0.00
+MiniPizza                      0       0.03       1.01            0.00
+-----                      -----      -----      -----           -----
+                              Inventory Value                     0.00
+                              Revenue Since Last Report           0.00
+                              Cost Since Last Report              0.00
+                              Profit Since Last Report            0.00
+```
