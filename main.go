@@ -54,6 +54,6 @@ func handleRequest(conn net.Conn, packetBus chan inventory.RequestPacket) {
 	}
 	r := inventory.NewRequest(string(buf[0:readLen]))
 	packetBus <- r
-	conn.Write([]byte(<-r.Response))
+	conn.Write([]byte(<-r.Response + "\n"))
 	conn.Close()
 }

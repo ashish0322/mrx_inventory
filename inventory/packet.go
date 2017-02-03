@@ -21,15 +21,15 @@ func ProcessInputs(packetBus chan RequestPacket) {
 		case packet := <-packetBus:
 			entry, err := ParseLine(packet.Body, reportBus)
 			if err != nil {
-				packet.Response <- err.Error() + "\n"
+				packet.Response <- err.Error()
 				continue
 			}
 			state, err = entry.NextState(state)
 			if err != nil {
-				packet.Response <- err.Error() + "\n"
+				packet.Response <- err.Error()
 				continue
 			}
-			packet.Response <- "OK\n"
+			packet.Response <- "OK"
 		case s := <-reportBus:
 			print("\033[H\033[2J")
 			fmt.Println(RenderState(s))
